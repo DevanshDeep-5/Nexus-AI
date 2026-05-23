@@ -1,0 +1,47 @@
+/*
+ * Content Script Styles
+ * ----------------------
+ * These styles are injected into every webpage by the content script.
+ * They control the appearance of source text highlighting — the purple
+ * underline marks that appear when the user clicks a source excerpt
+ * in the side panel chat.
+ *
+ * Uses !important to override any page-specific styles that might
+ * interfere with our highlight appearance.
+ */
+
+/* ── Source Highlight Mark ───────────────────────────────────────── */
+
+mark.atp-highlight {
+  background: linear-gradient(135deg, rgba(124, 92, 252, 0.25), rgba(168, 85, 247, 0.25)) !important;
+  border-bottom: 2px solid rgba(124, 92, 252, 0.6) !important;
+  padding: 1px 3px !important;
+  border-radius: 3px !important;
+  color: inherit !important;
+  transition: background 0.3s ease !important;
+  animation: atp-highlight-pulse 2s ease-in-out 1 !important;
+}
+
+/* Slightly brighter on hover for visual feedback */
+mark.atp-highlight:hover {
+  background: linear-gradient(135deg, rgba(124, 92, 252, 0.4), rgba(168, 85, 247, 0.4)) !important;
+}
+
+/* ── Highlight Pulse Animation ──────────────────────────────────── */
+/* Plays once when the highlight first appears — starts bright and
+   fades down to the resting state, drawing the user's eye. */
+
+@keyframes atp-highlight-pulse {
+  0% {
+    background: linear-gradient(135deg, rgba(124, 92, 252, 0.5), rgba(168, 85, 247, 0.5));
+    box-shadow: 0 0 15px rgba(124, 92, 252, 0.3);
+  }
+  50% {
+    background: linear-gradient(135deg, rgba(124, 92, 252, 0.35), rgba(168, 85, 247, 0.35));
+    box-shadow: 0 0 8px rgba(124, 92, 252, 0.15);
+  }
+  100% {
+    background: linear-gradient(135deg, rgba(124, 92, 252, 0.25), rgba(168, 85, 247, 0.25));
+    box-shadow: none;
+  }
+}
