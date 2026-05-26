@@ -1,11 +1,3 @@
-"""
-POST /debate — AI Debate Mode Endpoint
------------------------------------------
-Analyzes the page content and presents a balanced debate with
-arguments supporting and challenging the content's claims,
-plus a balanced verdict.
-"""
-
 from fastapi import APIRouter, HTTPException
 from app.schemas import DebateRequest, DebateResponse
 from app.services.llm import call_llm_json, DEBATE_PROMPT, as_list
@@ -17,14 +9,10 @@ router = APIRouter()
 
 @router.post("/debate", response_model=DebateResponse)
 async def debate_content(req: DebateRequest):
-    """Analyze content with arguments for and against."""
-
     if not req.page_content.strip():
         raise HTTPException(status_code=400, detail="Page content is empty")
 
     settings = get_settings()
-
-    # Clean noise and truncate to stay within token limits
     content = clean_text(req.page_content)
     content = truncate_text(content, settings.max_page_length)
 

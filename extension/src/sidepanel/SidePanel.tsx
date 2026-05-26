@@ -1,16 +1,3 @@
-/**
- * SidePanel — Main Layout Component
- * ------------------------------------
- * The root component for the Chrome extension's side panel.
- * Manages the overall layout: header, page info bar, tab navigation,
- * and the active tab's content view.
- *
- * State management:
- *   - activeTab: which tab (Chat/Summarize/Notes) is currently shown
- *   - isDark:    dark/light theme (managed by the useTheme hook)
- *   - pageData:  the extracted content from the current webpage
- */
-
 import React, { useState, useCallback } from "react";
 import { Header } from "./components/Header";
 import { TabBar } from "./components/TabBar";
@@ -27,16 +14,9 @@ export function SidePanel() {
   const { isDark, toggleTheme } = useTheme();
   const { pageData, loading: pageLoading, error: pageError, refresh } = usePageContent();
 
-  /** Send a message to the content script to highlight source text on the page */
   const handleHighlightSource = useCallback((text: string) => {
-    chrome.runtime?.sendMessage({
-      type: "HIGHLIGHT_SOURCE",
-      payload: { text },
-    }).catch(() => { });
+    chrome.runtime?.sendMessage({ type: "HIGHLIGHT_SOURCE", payload: { text } }).catch(() => {});
   }, []);
-
-  // ── Loading State ──────────────────────────────────────────────────
-  // Shown while the content script is extracting text from the page
 
   if (pageLoading) {
     return (
@@ -51,9 +31,6 @@ export function SidePanel() {
       </div>
     );
   }
-
-  // ── Error / Empty State ────────────────────────────────────────────
-  // Shown when content extraction fails or returns empty content
 
   if (pageError || !pageData.content) {
     return (
@@ -88,8 +65,6 @@ export function SidePanel() {
       </div>
     );
   }
-
-  // ── Main Content ──────────────────────────────────────────────────
 
   return (
     <div className="nexus-root">

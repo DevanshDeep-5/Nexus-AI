@@ -4,13 +4,14 @@ interface ApiOptions {
   signal?: AbortSignal;
 }
 
-function formatApiError(detail: unknown, fallback: string): string {
+// Parse error details from the API response
+function getErrorMessage(detail: unknown, fallback: string): string {
   if (typeof detail === "string" && detail.trim()) return detail;
   if (Array.isArray(detail)) {
-    const messages = detail
+    const msgs = detail
       .map((item) => (typeof item === "object" && item && "msg" in item ? String((item as { msg: string }).msg) : String(item)))
       .filter(Boolean);
-    if (messages.length) return messages.join("; ");
+    if (msgs.length) return msgs.join("; ");
   }
   return fallback || "API request failed";
 }
@@ -25,18 +26,16 @@ async function post<T>(endpoint: string, body: Record<string, unknown>, opts?: A
       signal: opts?.signal,
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Network error";
-    if (message.includes("Failed to fetch") || message.includes("NetworkError")) {
-      throw new Error(
-        `Cannot reach the backend at ${API_BASE_URL}. Is uvicorn running on port 8000?`
-      );
+    const msg = err instanceof Error ? err.message : "Network error";
+    if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+      throw new Error(`Cannot reach backend at ${API_BASE_URL}. Is uvicorn running on port 8000?`);
     }
-    throw err instanceof Error ? err : new Error(message);
+    throw err instanceof Error ? err : new Error(msg);
   }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(formatApiError(err.detail, res.statusText));
+    throw new Error(getErrorMessage(err.detail, res.statusText));
   }
 
   return res.json();
@@ -94,59 +93,34 @@ export interface HighlightActionResponse {
 
 export const api = {
   ask(question: string, pageContent: string, pageUrl: string, opts?: ApiOptions) {
-    return post<AskResponse>("/ask", {
-      question,
-      page_content: pageContent,
-      page_url: pageUrl,
-    }, opts);
+    return post<AskResponse>("/ask", { question, page_content: pageContent, page_url: pageUrl }, opts);
   },
 
   summarize(pageContent: string, pageUrl: string, opts?: ApiOptions) {
-    return post<SummarizeResponse>("/summarize", {
-      page_content: pageContent,
-      page_url: pageUrl,
-    }, opts);
+    return post<SummarizeResponse>("/summarize", { page_content: pageContent, page_url: pageUrl }, opts);
   },
 
   eli5(pageContent: string, pageUrl: string, opts?: ApiOptions) {
-    return post<ELI5Response>("/eli5", {
-      page_content: pageContent,
-      page_url: pageUrl,
-    }, opts);
+    return post<ELI5Response>("/eli5", { page_content: pageContent, page_url: pageUrl }, opts);
   },
 
   debate(pageContent: string, pageUrl: string, opts?: ApiOptions) {
-    return post<DebateResponse>("/debate", {
-      page_content: pageContent,
-      page_url: pageUrl,
-    }, opts);
+    return post<DebateResponse>("/debate", { page_content: pageContent, page_url: pageUrl }, opts);
   },
 
   notes(pageContent: string, pageUrl: string, opts?: ApiOptions) {
-    return post<NotesResponse>("/notes", {
-      page_content: pageContent,
-      page_url: pageUrl,
-    }, opts);
+    return post<NotesResponse>("/notes", { page_content: pageContent, page_url: pageUrl }, opts);
   },
 
   curiosity(pageContent: string, pageUrl: string, opts?: ApiOptions) {
-    return post<CuriosityResponse>("/curiosity", {
-      page_content: pageContent,
-      page_url: pageUrl,
-    }, opts);
+    return post<CuriosityResponse>("/curiosity", { page_content: pageContent, page_url: pageUrl }, opts);
   },
 
   youtubeTranscript(videoId: string, opts?: ApiOptions) {
-    return post<YouTubeTranscriptResponse>("/youtube/transcript", {
-      video_id: videoId,
-    }, opts);
+    return post<YouTubeTranscriptResponse>("/youtube/transcript", { video_id: videoId }, opts);
   },
 
   highlightAction(selectedText: string, action: string, pageContext: string, opts?: ApiOptions) {
-    return post<HighlightActionResponse>("/highlight-action", {
-      selected_text: selectedText,
-      action,
-      page_context: pageContext,
-    }, opts);
+    return post<HighlightActionResponse>("/highlight-action", { selected_text: selectedText, action, page_context: pageContext }, opts);
   },
 };

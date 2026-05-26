@@ -1,17 +1,3 @@
-/**
- * SummarizeView Component
- * -------------------------
- * Displays a structured TL;DR summary of the current page.
- *
- * Data flow:
- *   1. On mount, sends the page content to POST /summarize
- *   2. Shows skeleton loaders while waiting for the response
- *   3. Renders the result as three cards: Key Points, Insights, Takeaway
- *
- * The outer container uses h-full + overflow-y-auto so the content
- * scrolls independently when it exceeds the panel height.
- */
-
 import React, { useState, useEffect, useRef } from "react";
 import { Zap, CheckCircle2, Lightbulb, Target } from "lucide-react";
 import { SkeletonCard } from "./SkeletonLoader";
@@ -19,9 +5,7 @@ import { useAPI } from "../hooks/useAPI";
 import type { SummarizeResponse } from "../lib/api";
 
 interface SummarizeViewProps {
-  /** The extracted text content of the current page */
   pageContent: string;
-  /** The URL of the current page */
   pageUrl: string;
 }
 
@@ -30,7 +14,6 @@ export function SummarizeView({ pageContent, pageUrl }: SummarizeViewProps) {
   const { loading, error, summarize } = useAPI();
   const hasFetched = useRef(false);
 
-  // Fetch summary once when the component mounts (and content is available)
   useEffect(() => {
     if (pageContent && !hasFetched.current) {
       hasFetched.current = true;
@@ -41,7 +24,6 @@ export function SummarizeView({ pageContent, pageUrl }: SummarizeViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageContent]);
 
-  // ── Loading State ──────────────────────────────────────────────
   if (loading) {
     return (
       <div className="p-4 space-y-3">
@@ -52,7 +34,6 @@ export function SummarizeView({ pageContent, pageUrl }: SummarizeViewProps) {
     );
   }
 
-  // ── Error State ────────────────────────────────────────────────
   if (error) {
     return (
       <div className="p-4">
@@ -65,12 +46,10 @@ export function SummarizeView({ pageContent, pageUrl }: SummarizeViewProps) {
 
   if (!data) return null;
 
-  // ── Rendered Summary ──────────────────────────────────────────
   return (
     <div className="h-full overflow-y-auto">
       <div className="p-4 space-y-4 animate-fade-in">
 
-        {/* Key Points Card */}
         <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
@@ -89,7 +68,6 @@ export function SummarizeView({ pageContent, pageUrl }: SummarizeViewProps) {
           </ul>
         </div>
 
-        {/* Insights Card — only shown if there are insights */}
         {data.insights.length > 0 && (
           <div className="glass-card p-4">
             <div className="flex items-center gap-2 mb-3">
@@ -109,7 +87,6 @@ export function SummarizeView({ pageContent, pageUrl }: SummarizeViewProps) {
           </div>
         )}
 
-        {/* Takeaway Card — highlighted with a left border accent */}
         {data.takeaway && (
           <div className="glass-card p-4 border-l-4 border-l-primary-500">
             <div className="flex items-center gap-2 mb-2">

@@ -1,11 +1,3 @@
-"""
-POST /curiosity — Smart Curiosity Suggestions Endpoint
---------------------------------------------------------
-Generates insightful follow-up questions about the page content
-that a curious reader might want to explore further.
-These are displayed as suggestion chips in the Chat tab.
-"""
-
 from fastapi import APIRouter, HTTPException
 from app.schemas import CuriosityRequest, CuriosityResponse
 from app.services.llm import call_llm_json, CURIOSITY_PROMPT, as_list
@@ -17,14 +9,10 @@ router = APIRouter()
 
 @router.post("/curiosity", response_model=CuriosityResponse)
 async def curiosity_suggestions(req: CuriosityRequest):
-    """Generate smart follow-up questions about the page content."""
-
     if not req.page_content.strip():
         raise HTTPException(status_code=400, detail="Page content is empty")
 
     settings = get_settings()
-
-    # Clean noise and truncate to stay within token limits
     content = clean_text(req.page_content)
     content = truncate_text(content, settings.max_page_length)
 

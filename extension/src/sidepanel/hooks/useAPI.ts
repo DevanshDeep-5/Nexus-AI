@@ -1,14 +1,3 @@
-/**
- * useAPI Hook
- * ------------
- * Wraps backend API calls with per-request loading/error state and
- * cancellation support.
- *
- * Each view (SummarizeView, NotesView, ChatView) creates its own useAPI()
- * instance, so they never share loading/error state or abort controllers.
- * This ensures that one view completing never interferes with another.
- */
-
 import { useState, useCallback, useRef } from "react";
 import { api } from "../lib/api";
 import type {
@@ -24,45 +13,40 @@ type RequestKey = "ask" | "summarize" | "eli5" | "debate" | "notes";
 export function useAPI() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abortRefs = useRef<Partial<Record<RequestKey, AbortController>>>({});
+  const controllers = useRef<Partial<Record<RequestKey, AbortController>>>({});
 
   const cancel = useCallback((key?: RequestKey) => {
     if (key) {
-      abortRefs.current[key]?.abort();
-      delete abortRefs.current[key];
+      controllers.current[key]?.abort();
+      delete controllers.current[key];
     } else {
-      Object.values(abortRefs.current).forEach((controller) => controller?.abort());
-      abortRefs.current = {};
+      Object.values(controllers.current).forEach((c) => c?.abort());
+      controllers.current = {};
     }
     setLoading(false);
   }, []);
 
   const execute = useCallback(
     async <T>(key: RequestKey, fn: (signal: AbortSignal) => Promise<T>): Promise<T | null> => {
-      // Cancel any existing request for this key
-      abortRefs.current[key]?.abort();
+      controllers.current[key]?.abort();
 
       const controller = new AbortController();
-      abortRefs.current[key] = controller;
+      controllers.current[key] = controller;
 
       setLoading(true);
       setError(null);
 
       try {
-        const result = await fn(controller.signal);
-        return result;
+        return await fn(controller.signal);
       } catch (err: unknown) {
-        if (err instanceof Error && err.name === "AbortError") {
-          // Request was intentionally cancelled — don't show error
-          return null;
-        }
-        const message = err instanceof Error ? err.message : "Something went wrong";
-        setError(message);
+        if (err instanceof Error && err.name === "AbortError") return null;
+        const msg = err instanceof Error ? err.message : "Something went wrong";
+        setError(msg);
         return null;
       } finally {
         setLoading(false);
-        if (abortRefs.current[key] === controller) {
-          delete abortRefs.current[key];
+        if (controllers.current[key] === controller) {
+          delete controllers.current[key];
         }
       }
     },

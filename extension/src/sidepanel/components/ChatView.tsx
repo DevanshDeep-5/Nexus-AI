@@ -1,16 +1,3 @@
-/**
- * ChatView Component
- * --------------------
- * The main chat interface where users ask questions about the page.
- *
- * Features:
- *   - Message history with user/AI bubbles
- *   - Auto-scroll to latest message
- *   - Auto-resize textarea input
- *   - Suggestion chips from the curiosity API
- *   - Request cancellation support
- */
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Send, StopCircle } from "lucide-react";
 import { MessageBubble, type Message } from "./MessageBubble";
@@ -19,11 +6,8 @@ import { useAPI } from "../hooks/useAPI";
 import { api } from "../lib/api";
 
 interface ChatViewProps {
-  /** The extracted text content of the current page */
   pageContent: string;
-  /** The URL of the current page */
   pageUrl: string;
-  /** Callback to highlight a source excerpt on the page */
   onHighlightSource: (text: string) => void;
 }
 
@@ -35,13 +19,13 @@ export function ChatView({ pageContent, pageUrl, onHighlightSource }: ChatViewPr
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { loading, error, ask, cancel } = useAPI();
 
-  // ── Auto-scroll ──────────────────────────────────────────────────
-  // Scroll to the bottom whenever a new message appears or loading starts
+  // Auto scroll to bottom when new messages come in
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Fetch suggestions separately — must not share abort with /ask (was cancelling chat)
+  // Load curiosity suggestions when page content is available
+  // Using a separate api call so it doesn't interfere with the chat abort controller
   useEffect(() => {
     if (!pageContent) return;
 
@@ -53,35 +37,26 @@ export function ChatView({ pageContent, pageUrl, onHighlightSource }: ChatViewPr
           setSuggestions(res.questions.slice(0, 4));
         }
       })
-      .catch(() => {
-        // Suggestions are optional; ignore failures
-      });
+      .catch(() => {});
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [pageContent, pageUrl]);
 
-  /**
-   * Submit a question — either from the input field or a suggestion chip.
-   * Creates a user message bubble, sends it to the /ask endpoint,
-   * and appends the AI's response as a new bubble.
-   */
   const handleSubmit = useCallback(
     async (question?: string) => {
       const q = question || input.trim();
       if (!q || loading) return;
 
-      // Add the user's message to the chat
       const userMsg: Message = {
         id: `user-${Date.now()}`,
         role: "user",
         content: q,
         timestamp: new Date(),
       };
+
       setMessages((prev) => [...prev, userMsg]);
       setInput("");
-      setSuggestions([]); // Hide suggestions once the user starts chatting
+      setSuggestions([]);
 
       const result = await ask(q, pageContent, pageUrl);
       if (result?.answer?.trim()) {
@@ -94,12 +69,10 @@ export function ChatView({ pageContent, pageUrl, onHighlightSource }: ChatViewPr
         };
         setMessages((prev) => [...prev, aiMsg]);
       }
-      // Errors are shown via `error` from useAPI; no extra bubble needed
     },
     [input, loading, ask, pageContent, pageUrl]
   );
 
-  /** Submit on Enter key, allow Shift+Enter for new lines */
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -110,7 +83,6 @@ export function ChatView({ pageContent, pageUrl, onHighlightSource }: ChatViewPr
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
         {messages.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center h-full text-center px-6 animate-fade-in">
             <div className="nexus-hero-icon mb-5">
@@ -155,7 +127,6 @@ export function ChatView({ pageContent, pageUrl, onHighlightSource }: ChatViewPr
         ))}
 
         {loading && <SkeletonBubble />}
-
         <div ref={messagesEndRef} />
       </div>
 
@@ -177,9 +148,9 @@ export function ChatView({ pageContent, pageUrl, onHighlightSource }: ChatViewPr
             className="nexus-textarea"
             style={{ height: "36px" }}
             onInput={(e) => {
-              const t = e.currentTarget;
-              t.style.height = "36px";
-              t.style.height = Math.min(t.scrollHeight, 120) + "px";
+              const el = e.currentTarget;
+              el.style.height = "36px";
+              el.style.height = Math.min(el.scrollHeight, 120) + "px";
             }}
           />
 

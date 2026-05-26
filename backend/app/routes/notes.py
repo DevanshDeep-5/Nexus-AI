@@ -1,10 +1,3 @@
-"""
-POST /notes — Auto Notes Generator Endpoint
-----------------------------------------------
-Converts webpage content into well-structured study notes with
-titled sections, bullet points, and highlighted key terms.
-"""
-
 from fastapi import APIRouter, HTTPException
 from app.schemas import NotesRequest, NotesResponse, NotesSection
 from app.services.llm import call_llm_json, NOTES_PROMPT, as_list
@@ -16,14 +9,10 @@ router = APIRouter()
 
 @router.post("/notes", response_model=NotesResponse)
 async def generate_notes(req: NotesRequest):
-    """Convert webpage content into structured notes."""
-
     if not req.page_content.strip():
         raise HTTPException(status_code=400, detail="Page content is empty")
 
     settings = get_settings()
-
-    # Clean noise and truncate to stay within token limits
     content = clean_text(req.page_content)
     content = truncate_text(content, settings.max_page_length)
 
@@ -31,7 +20,6 @@ async def generate_notes(req: NotesRequest):
         prompt = NOTES_PROMPT.format(content=content)
         data = await call_llm_json(prompt)
 
-        # Parse each section from the LLM's JSON response into NotesSection models
         sections = []
         for s in as_list(data.get("sections")):
             if not isinstance(s, dict):

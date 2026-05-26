@@ -1,8 +1,3 @@
-/**
- * Content Script
- * Extracts text, manages floating menu, and handles highlighting.
- */
-
 function extractPageContent(): {
   content: string;
   title: string;
@@ -27,7 +22,6 @@ function extractPageContent(): {
   const clone = document.body.cloneNode(true) as HTMLElement;
   excludeSelectors.forEach((sel) => clone.querySelectorAll(sel).forEach((el) => el.remove()));
 
-  let content = "";
   const mainContent =
     clone.querySelector("main") ||
     clone.querySelector("article") ||
@@ -36,12 +30,8 @@ function extractPageContent(): {
     clone.querySelector(".article-content") ||
     clone.querySelector(".entry-content");
 
-  content = (mainContent?.textContent || clone.textContent || "").trim();
-
-  content = content
-    .replace(/\s+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  let content = (mainContent?.textContent || clone.textContent || "").trim();
+  content = content.replace(/\s+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
 
   if (content.length > 100000) {
     content = content.substring(0, 100000) + "\n\n[Content truncated]";
@@ -119,6 +109,7 @@ function createFloatingMenu() {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       const selectedText = window.getSelection()?.toString().trim();
+
       if (selectedText) {
         chrome.runtime.sendMessage(
           {
@@ -144,8 +135,10 @@ function createFloatingMenu() {
           }
         );
       }
+
       hideFloatingMenu();
     });
+
     menu.appendChild(btn);
   });
 
@@ -177,6 +170,7 @@ function hideFloatingMenu() {
 }
 
 function highlightTextOnPage(searchText: string) {
+  // Clear previous highlights
   document.querySelectorAll(".atp-highlight").forEach((el) => {
     const parent = el.parentNode;
     if (parent) {
@@ -209,22 +203,13 @@ function highlightTextOnPage(searchText: string) {
     textNodes.push(node as Text);
   }
 
-  let fullText = "";
-  textNodes.forEach((tn) => fullText += tn.textContent || "");
-
-  const normalizedFull = fullText.replace(/\s+/g, " ").toLowerCase();
   const normalizedSearch = search.replace(/\s+/g, " ").toLowerCase();
 
-  const matchIndex = normalizedFull.indexOf(normalizedSearch);
-  if (matchIndex === -1) return;
-
-  let found = false;
   for (const tn of textNodes) {
     const text = tn.textContent || "";
-    const normalizedNodeText = text.toLowerCase();
-    const idx = normalizedNodeText.indexOf(normalizedSearch.substring(0, Math.min(40, normalizedSearch.length)));
+    const idx = text.toLowerCase().indexOf(normalizedSearch.substring(0, Math.min(40, normalizedSearch.length)));
 
-    if (idx !== -1 && !found) {
+    if (idx !== -1) {
       try {
         const range = document.createRange();
         range.setStart(tn, idx);
@@ -234,7 +219,7 @@ function highlightTextOnPage(searchText: string) {
         mark.className = "atp-highlight";
         range.surroundContents(mark);
         mark.scrollIntoView({ behavior: "smooth", block: "center" });
-        found = true;
+        break;
       } catch (e) {}
     }
   }
@@ -244,6 +229,7 @@ document.addEventListener("mouseup", () => {
   setTimeout(() => {
     const selection = window.getSelection();
     const text = selection?.toString().trim();
+
     if (text && text.length > 3) {
       const range = selection!.getRangeAt(0);
       const rect = range.getBoundingClientRect();
@@ -280,6 +266,7 @@ function showToast(text: string, isError = false) {
     `;
     shadow.appendChild(toast);
   }
+
   toast.style.borderColor = isError ? "rgba(244,63,94,0.5)" : "rgba(124, 92, 252, 0.35)";
   toast.textContent = text;
   toast.style.display = "block";
