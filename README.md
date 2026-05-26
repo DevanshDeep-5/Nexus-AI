@@ -30,6 +30,17 @@
 
 ---
 
+## 📸 Screenshots & Demo
+
+> **Note:** Add your screen recordings or screenshots here to showcase the extension in action!
+> 
+> Example:
+> ```markdown
+> ![App Demo](path/to/demo.gif)
+> ```
+
+---
+
 ## 🏗️ Architecture
 
 This project is split into two perfectly decoupled layers:
@@ -138,17 +149,6 @@ CHUNK_OVERLAP=50
 MAX_PAGE_LENGTH=100000
 TOP_K_RESULTS=5
 ```
-
----
-
-## 🛠️ Deployment
-
-To deploy this in production for actual users:
-
-1. **Deploy Backend:** Deploy the `backend` folder to a service like Render, Railway, or Fly.io. Ensure you set your `OPENAI_API_KEY` in the host's environment variables.
-2. **Update Frontend API URL:** Open `extension/src/sidepanel/lib/constants.ts` and change `API_BASE_URL` to your newly deployed backend URL (e.g., `https://my-api.onrender.com`).
-3. **Build Frontend:** Run `npm run build` in the `extension/` directory.
-4. **Publish Extension:** Zip the `extension/dist` folder and upload it to the Chrome Web Store Developer Dashboard.
 
 ---
 
