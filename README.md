@@ -20,24 +20,20 @@
 
 - **💬 Chat & Q&A:** Ask questions about the page content, and the AI will search the text to give you a precise answer.
 - **⚡ TL;DR Summaries:** Get a quick 5-point takeaway with key insights in a single click.
-- **👶 ELI5 (Explain Like I'm 5):** Simplifies complex jargon or difficult concepts into easily digestible explanations.
 - **📝 Structured Notes:** Automatically generates structured, readable notes with definitions for key terms.
-- **⚔️ Debate Mode:** Extracts the main arguments of the page and presents the "For" and "Against" perspectives.
-- **🔍 Source Highlighting:** The AI cites its sources. Clicking a citation highlights the exact text on the actual webpage!
-- **📋 Floating Action Menu:** Simply select text on any page to quickly Summarize, Explain, or Find Examples for that specific text.
 - **📺 YouTube Transcript Support:** Works flawlessly on YouTube videos by extracting transcripts for video Q&A.
+- **💡 Suggested Questions:** The AI reads the page and suggests what YOU should be asking
 - **🌗 Dark/Light Mode UI:** Beautiful, responsive UI built with Tailwind CSS that respects your system theme.
 
 ---
 
 ## 📸 Screenshots & Demo
+<img width="1680" height="1050" alt="Screenshot 2026-05-26 at 11 59 48 PM" src="https://github.com/user-attachments/assets/29b20b13-5b00-45bf-b77e-47a6f8ce08f5" />
+<img width="1680" height="1050" alt="Screenshot 2026-05-26 at 11 59 25 PM" src="https://github.com/user-attachments/assets/4f03182d-ea11-4472-9284-c451a6af82d6" />
+<img width="382" height="935" alt="Screenshot 2026-05-26 at 11 58 42 PM" src="https://github.com/user-attachments/assets/6e14f22f-9c15-47b9-a70e-52963463230c" />
+<img width="382" height="935" alt="Screenshot 2026-05-26 at 11 52 41 PM" src="https://github.com/user-attachments/assets/c0413d27-f491-4a2f-99ea-bc06b8e4c916" />
+<img width="1680" height="1050" alt="Screenshot 2026-05-27 at 12 00 17 AM" src="https://github.com/user-attachments/assets/1c3dc8a4-6b85-4c4b-9d56-380d3572f8b9" />
 
-> **Note:** Add your screen recordings or screenshots here to showcase the extension in action!
-> 
-> Example:
-> ```markdown
-> ![App Demo](path/to/demo.gif)
-> ```
 
 ---
 
@@ -149,14 +145,6 @@ CHUNK_OVERLAP=50
 MAX_PAGE_LENGTH=100000
 TOP_K_RESULTS=5
 ```
-
----
-
-## 🛡️ Security & Privacy
-
-- **No Data Hoarding:** The backend receives page context, processes the answer in memory/local vector db, and returns it. Nothing is permanently stored on the server.
-- **Isolated Context:** Content scripts run in an isolated world and the floating menu utilizes the Shadow DOM to prevent CSS bleeding and interference with host websites.
-- **API Keys are Hidden:** The extension does not store API keys. All keys remain safely on the backend server.
 
 ---
 
